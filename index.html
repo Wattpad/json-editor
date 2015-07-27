@@ -36,67 +36,7 @@
             </div>
 
             <h2>JSON Output</h2>
-            <p>You can also make changes to the JSON here and set the value in the editor by clicking <button class='btn btn-primary' id='setvalue'>Update Form</button></p>
             <textarea id='output' style='width: 100%; height: 300px; font-family: monospace;' class='form-control'></textarea>
-
-            <h2>Options</h2>
-            <div id='options_holder'>
-                <div>
-                    <label>CSS Framework</label>
-                    <select id='theme_switcher' class='form-control'>
-                        <option value='html'>None</option>
-                        <option value='jqueryui'>jQuery UI</option>
-                        <option value='bootstrap2'>Bootstrap 2</option>
-                        <option value='bootstrap3'>Bootstrap 3</option>
-                        <option value='foundation3'>Foundation 3</option>
-                        <option value='foundation4'>Foundation 4</option>
-                        <option value='foundation5'>Foundation 5</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Icon Library</label>
-                    <select id='icon_switcher' class='form-control'>
-                        <option value=''>None</option>
-                        <option value='jqueryui'>jQuery UI</option>
-                        <option value='bootstrap2'>Bootstrap 2 Glyphicons</option>
-                        <option value='bootstrap3'>Bootstrap 3 Glyphicons</option>
-                        <option value='foundation2'>Foundicons 2</option>
-                        <option value='foundation3'>Foundicons 3</option>
-                        <option value='fontawesome3'>FontAwesome 3</option>
-                        <option value='fontawesome4'>FontAwesome 4</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Object Layout</label>
-                    <select id='object_layout' class='form-control'>
-                        <option value='normal'>normal</option>
-                        <option value='grid'>grid</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Show Errors</label>
-                    <select id='show_errors' class='form-control'>
-                        <option value='interaction'>On Interaction</option>
-                        <option value='change'>On Field Change</option>
-                        <option value='always'>Always</option>
-                        <option value='never'>Never</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Boolean options</label>
-                    <select multiple size=9 id='boolean_options' style='width: 100%;' class='form-control'>
-                        <option value='required_by_default'>Object properties required by default</option>
-                        <option value='no_additional_properties'>No additional object properties</option>
-                        <option value='ajax'>Allow loading schemas via Ajax</option>
-                        <option value='disable_edit_json'>Disable "Edit JSON" buttons</option>
-                        <option value='disable_collapse'>Disable collapse buttons</option>
-                        <option value='disable_properties'>Disable properties buttons</option>
-                        <option value='disable_array_add'>Disable array add buttons</option>
-                        <option value='disable_array_reorder'>Disable array move buttons</option>
-                        <option value='disable_array_delete'>Disable array delete buttons</option>
-                    </select>
-                </div>
-            </div>
 
             <h2>Validation</h2>
             <p>This will update whenever the form changes to show validation errors if there are any.</p>
@@ -250,7 +190,6 @@ editor.on("change",  function() {
 
     // Buttons
     var $set_schema_button = document.getElementById('setschema');
-    var $set_value_button = document.getElementById('setvalue');
 
     var jsoneditor;
 
@@ -288,6 +227,7 @@ editor.on("change",  function() {
         // When the value of the editor changes, update the JSON output and validation message
         jsoneditor.on('change',function() {
             var json = jsoneditor.getValue();
+
             // If the key is video_youtube_id, auto parse the link to grab id
             if (json.video_youtube_id) {
                 var videoId = '';
@@ -321,11 +261,6 @@ editor.on("change",  function() {
     $schema.value = JSON.stringify(schema,null,2);
     $output.value = '';
 
-    // When the 'update form' button is clicked, set the editor's value
-    $set_value_button.addEventListener('click',function() {
-        jsoneditor.setValue(JSON.parse($output.value));
-    });
-
     // Update the schema when the button is clicked
     $set_schema_button.addEventListener('click',function() {
         try {
@@ -355,13 +290,11 @@ editor.on("change",  function() {
 
         if(typeof mapping[theme] === 'undefined') {
             theme = 'bootstrap3';
-            document.getElementById('theme_switcher').value = theme;
         }
 
         JSONEditor.defaults.options.theme = theme;
 
         document.getElementById('theme_stylesheet').href = mapping[theme];
-        document.getElementById('theme_switcher').value = JSONEditor.defaults.options.theme;
 
         if(!no_reload) reload(true);
     };
@@ -380,37 +313,9 @@ editor.on("change",  function() {
         JSONEditor.defaults.options.iconlib = iconlib;
 
         document.getElementById('icon_stylesheet').href = mapping[iconlib] || '';
-        document.getElementById('icon_switcher').value = JSONEditor.defaults.options.iconlib;
 
         if(!no_reload) reload(true);
     };
-
-    var refreshBooleanOptions = function(no_reload) {
-        var boolean_options = document.getElementById('boolean_options').children;
-        for(var i=0; i<boolean_options.length; i++) {
-            JSONEditor.defaults.options[boolean_options[i].value] = boolean_options[i].selected;
-        }
-        if(!no_reload) reload(true);
-    };
-
-    // Change listeners for options
-    document.getElementById('theme_switcher').addEventListener('change',function() {
-        setTheme(this.value);
-    });
-    document.getElementById('icon_switcher').addEventListener('change',function() {
-        setIconlib(this.value);
-    });
-    document.getElementById('object_layout').addEventListener('change',function() {
-       JSONEditor.defaults.options.object_layout = this.value;
-        reload(true);
-    });
-    document.getElementById('show_errors').addEventListener('change',function() {
-       JSONEditor.defaults.options.show_errors = this.value;
-        reload(true);
-    });
-    document.getElementById('boolean_options').addEventListener('change',function() {
-        refreshBooleanOptions();
-    });
     
     // Get starting value from url
     if(window.location.href.match('[?&]value=([^&]+)')) {
@@ -421,20 +326,6 @@ editor.on("change",  function() {
     setTheme((window.location.href.match(/[?&]theme=([^&]+)/)||[])[1] || 'bootstrap2', true);
     
     setIconlib((window.location.href.match(/[?&]iconlib=([^&]*)/)||[null,'fontawesome4'])[1], true);
-    
-    document.getElementById('object_layout').value = (window.location.href.match(/[?&]object_layout=([^&]+)/)||[])[1] || 'normal';
-    JSONEditor.defaults.options.object_layout = document.getElementById('object_layout').value;
-    
-    document.getElementById('show_errors').value = (window.location.href.match(/[?&]show_errors=([^&]+)/)||[])[1] || 'interaction';
-    JSONEditor.defaults.options.show_errors = document.getElementById('show_errors').value;
-    
-    var boolean_options = document.getElementById('boolean_options').children;
-    for(var i=0; i<boolean_options.length; i++) {
-        if(window.location.href.match(new RegExp('[?&]'+boolean_options[i].getAttribute('value')+'([&=]|$)'))) {
-            boolean_options[i].selected = true;
-        }
-    }
-    refreshBooleanOptions(true);
     
     reload();
 })();
